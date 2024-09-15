@@ -1,6 +1,6 @@
 const Block=require('./block');
 const {GENESIS_DATA}= require('./config');
-const cryptHash=require('./crypt-hash')
+const cryptHash=require('./crypto-hash')
 
 describe('Block', () => {
 
