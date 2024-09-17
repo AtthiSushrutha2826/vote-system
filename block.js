@@ -13,11 +13,13 @@ const cryptoHash =require('./crypto-hash')
         return new Block(GENESIS_DATA);
     }
     static mineBlock({lastBlock, data}) {
-        return new Block({
+        let block = new Block({
             timestamp: Date.now(),
             lastHash: lastBlock.hash,
             data
-        })
+        });
+        block.hash = cryptoHash(block.timestamp, block.lastHash, block.data);
+        return block;
     }
    }
     
