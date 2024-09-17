@@ -1,3 +1,4 @@
+
 const Block = require('./block');
 const cryptoHash = require('./crypto-hash');
 
@@ -18,7 +19,7 @@ class Blockchain{
             return;
         }
         if(!Blockchain.isValidChain(chain)){
-            console.error('incomig chain must be valid')
+            console.error('incoming chain must be valid')
             return;
         }
         console.log('replacinng chain with ',chain); 
@@ -40,3 +41,4 @@ class Blockchain{
 } 
 module.exports = Blockchain;
      
+

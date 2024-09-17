@@ -1,3 +1,4 @@
+
 const Block=require('./block');
 const {GENESIS_DATA}= require('./config');
 const cryptHash=require('./crypto-hash')
@@ -57,10 +58,12 @@ describe('Block', () => {
             expect(minedBlock.timestamp).not.toEqual(undefined);
         });
         it('creates a SHA-256 `hash` based on the proper input', ()=>{
-             expect(minedBlock.hash)
-               .toEqual(cryptHash(minedBlock.timestamp, lastBlock.hash, data));
+             expect(minedBlock.hash).toEqual(cryptHash(minedBlock.timestamp, lastBlock.hash, data));
         });
 
     });
 
 });
+
+// block.test.js
+// block.test.js
