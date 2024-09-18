@@ -1,107 +1,64 @@
 const Block = require('./block');
-const { GENESIS_DATA, MINE_RATE } = require('./config');
 const cryptoHash = require('./crypto-hash');
 
-describe('Block', () => {
-    const timestamp = 2000;
-    const lastHash = 'foo-hash';
-    const hash = 'bar-hash';
-    const data = ['blockchain', 'data'];
-    const nonce = 1;
-    const difficulty = 1;
-    
-    const block = new Block({ timestamp, lastHash, hash, data, nonce, difficulty });
+class Blockchain {
+    constructor() {
+        // Start the chain with the genesis block
+        this.chain = [Block.genesis()];
+    }
 
-    it('has a timestamp, lastHash, hash, data, nonce, and difficulty property', () => {
-        expect(block.timestamp).toEqual(timestamp);
-        expect(block.lastHash).toEqual(lastHash);
-        expect(block.hash).toEqual(hash);
-        expect(block.data).toEqual(data);
-        expect(block.nonce).toEqual(nonce);
-        expect(block.difficulty).toEqual(difficulty);
-    });
-
-    describe('genesis()', () => {
-        const genesisBlock = Block.genesis();
-    
-        it('returns a Block instance', () => {
-            expect(genesisBlock instanceof Block).toBe(true);
-        });
-    
-        it('returns the genesis data', () => {
-            expect(genesisBlock).toEqual(new Block(GENESIS_DATA));
+    addBlock({ data }) {
+        const newBlock = Block.mineBlock({
+            lastBlock: this.chain[this.chain.length - 1],
+            data,
         });
 
-        // Alternatively, test individual properties of the genesis block.
-        it('has the correct genesis block properties', () => {
-            expect(genesisBlock.timestamp).toEqual(GENESIS_DATA.timestamp);
-            expect(genesisBlock.lastHash).toEqual(GENESIS_DATA.lastHash);
-            expect(genesisBlock.hash).toEqual(GENESIS_DATA.hash);
-            expect(genesisBlock.data).toEqual(GENESIS_DATA.data);
-            expect(genesisBlock.nonce).toEqual(GENESIS_DATA.nonce);
-            expect(genesisBlock.difficulty).toEqual(GENESIS_DATA.difficulty);
-        });
-    });
+        this.chain.push(newBlock);
+    }
 
-    describe('mineBlock()', () => {
-        const lastBlock = Block.genesis();
-        const data = 'mined-data';
-        const minedBlock = Block.mineBlock({ lastBlock, data });
+    replaceChain(chain, onSuccess) {
+        if (chain.length <= this.chain.length) {
+            console.error('The incoming chain must be longer.');
+            return;
+        }
 
-        it('returns a Block instance', () => {
-            expect(minedBlock instanceof Block).toBe(true);
-        });
+        if (!Blockchain.isValidChain(chain)) {
+            console.error('The incoming chain is invalid.');
+            return;
+        }
 
-        it('sets the lastHash to be the hash of the lastBlock', () => {
-            expect(minedBlock.lastHash).toEqual(lastBlock.hash);
-        });
+        console.log('Replacing the chain with the new chain...');
+        if (onSuccess) onSuccess();
+        this.chain = chain;
+    }
 
-        it('sets the data', () => {
-            expect(minedBlock.data).toEqual(data);
-        });
+    static isValidChain(chain) {
+        // Ensure the chain starts with the genesis block
+        if (JSON.stringify(chain[0]) !== JSON.stringify(Block.genesis())) {
+            return false;
+        }
 
-        it('sets a timestamp', () => {
-            expect(minedBlock.timestamp).not.toBeUndefined();
-        });
+        // Validate every block in the chain
+        for (let i = 1; i < chain.length; i++) {
+            const block = chain[i];
+            const actualLastHash = chain[i - 1].hash;
+            const { timestamp, lastHash, hash, nonce, difficulty, data } = block;
 
-        it('creates a hash based on the proper inputs', () => {
-            expect(minedBlock.hash).toEqual(
-                cryptoHash(minedBlock.timestamp, minedBlock.lastHash, minedBlock.data, minedBlock.nonce, minedBlock.difficulty)
-            );
-        });
+            // Ensure the block's lastHash matches the previous block's hash
+            if (lastHash !== actualLastHash) return false;
 
-        it('sets a nonce value greater than 0', () => {
-            expect(minedBlock.nonce).toBeGreaterThan(0);
-        });
+            // Ensure the hash is correctly computed
+            const validatedHash = cryptoHash(timestamp, lastHash, nonce, difficulty, data);
+            if (hash !== validatedHash) return false;
 
-        it('sets a difficulty value', () => {
-            expect(minedBlock.difficulty).not.toBeUndefined();
-        });
+            // Check that the difficulty hasn't jumped too far
+            if (Math.abs(chain[i - 1].difficulty - block.difficulty) > 1) {
+                return false;
+            }
+        }
 
-        it('sets a hash that matches the difficulty criteria', () => {
-            expect(minedBlock.hash.substring(0, minedBlock.difficulty))
-                .toEqual('0'.repeat(minedBlock.difficulty));
-        });
-    });
+        return true;
+    }
+}
 
-    describe('adjustDifficulty()', () => {
-        it('raises the difficulty for a quickly mined block', () => {
-            expect(Block.adjustDifficulty({
-                originalBlock: block, timestamp: block.timestamp + MINE_RATE - 100
-            })).toEqual(block.difficulty + 1);
-        });
-
-        it('lowers the difficulty for a slowly mined block', () => {
-            expect(Block.adjustDifficulty({
-                originalBlock: block, timestamp: block.timestamp + MINE_RATE + 100
-            })).toEqual(Math.max(block.difficulty - 1, 1));
-        });
-
-        it('has a lower limit of 1 for difficulty', () => {
-            block.difficulty = 0;
-            expect(Block.adjustDifficulty({
-                originalBlock: block, timestamp: block.timestamp + MINE_RATE + 100
-            })).toEqual(1);
-        });
-    });
-});
+module.exports = Blockchain;
