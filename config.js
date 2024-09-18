@@ -1,8 +1,11 @@
-const GENESIS_DATA ={
-    timestamp: 1,
-    lastHash:'-----',
-    hash: 'hash-one',
-    data:[]
+const MINE_RATE = 1000;
+const GENESIS_DATA = {
+  timestamp: 1,
+  lastHash: '----',
+  hash: 'genesis-hash',
+  data: [],
+  nonce: 0,
+  difficulty: 3
 };
-module.exports ={ GENESIS_DATA};
 
+module.exports = { GENESIS_DATA, MINE_RATE };

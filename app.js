@@ -1,20 +1,13 @@
 const express = require('express');
-const bodyparser = require('body-parser');
 const Blockchain = require('./blockchain');
 
 const app = express();
-const blockchain = Blockchain();
+const blockchain = new Blockchain();
 
-app.use(bodyparser.urlencoded({extended: true}));
-
-app.get('/api/blocks', (req, res) => res.json(blockchain.chain));
-
-app.post('/api/mine', (req, res) => {
-    const { data } = req.body;
-
-    blockchain.addBlock({ data });
-    res.redirect('/api/blocks');
-})
+app.get('/api/blocks', (req, res) => {
+    res.json(blockchain.chain); // Corrected 'Ires' to 'res'
+});
 
 const PORT = 3000;
-app.listen(prompt, () => console.log(`listening at localhost:${PORT}`));
+
+app.listen(PORT, () => console.log(Listening at localhost:${PORT}));
