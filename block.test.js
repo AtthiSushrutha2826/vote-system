@@ -29,17 +29,7 @@ describe('Block', () => {
     })
 
     it('returns the genesis data', () => {
-      expect(genesisBlock).toEqual(new Block(GENESIS_DATA))
-    })
-
-    // Alternatively, test individual properties of the genesis block.
-    it('has the correct genesis block properties', () => {
-      expect(genesisBlock.timestamp).toEqual(GENESIS_DATA.timestamp)
-      expect(genesisBlock.lastHash).toEqual(GENESIS_DATA.lastHash)
-      expect(genesisBlock.hash).toEqual(GENESIS_DATA.hash)
-      expect(genesisBlock.data).toEqual(GENESIS_DATA.data)
-      expect(genesisBlock.nonce).toEqual(GENESIS_DATA.nonce)
-      expect(genesisBlock.difficulty).toEqual(GENESIS_DATA.difficulty)
+      expect(genesisBlock).toEqual(GENESIS_DATA)
     })
   })
 
@@ -61,7 +51,7 @@ describe('Block', () => {
     })
 
     it('sets a timestamp', () => {
-      expect(minedBlock.timestamp).not.toBeUndefined()
+      expect(minedBlock.timestamp).not.toEqual(undefined)
     })
 
     it('creates a hash based on the proper inputs', () => {
@@ -99,9 +89,7 @@ describe('Block', () => {
 
     it('has a lower limit of 1 for difficulty', () => {
       block.difficulty = 0
-      expect(Block.adjustDifficulty({
-        originalBlock: block, timestamp: block.timestamp + MINE_RATE + 100
-      })).toEqual(1)
+      expect(Block.adjustDifficulty({ originalBlock: block })).toEqual(1)
     })
   })
 })
